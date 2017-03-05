@@ -420,6 +420,40 @@ function text_to_voice(text) {
 
 var status_tree_root = build_status_tree();
 var curr_status = status_tree_root;
+
+
+var prod_list = [ {
+				    "name": "Computer",
+				    "price": 1499
+				  }, {
+				    "name": "Mobile Phone",
+				    "price": 769
+				  }, {
+				   "name": "Watch",
+				    "price": 269
+				  }, {
+				   "name": "TV box",
+				    "price": 149
+				  }, {
+				   "name": "Music Player",
+				    "price": 49
+				  }, {
+				    "name": "Earphone",
+				    "price": 99
+				  }, {
+				  "name": "TV set",
+				    "price": 3499
+				  }, {
+				    "name": "Tablets",
+				    "price": 499
+				  }, {
+				  "name": "VR Glasses",
+				    "price": 49
+				  }, {
+				    "name": "Play Station",
+				    "price": 399
+				  } ];
+var unrecog_times = 0;
 function response_gen(human_speech) {
 	console.log(human_speech);
 	var response = "";
@@ -429,29 +463,176 @@ function response_gen(human_speech) {
 			if (human_speech.includes("hello") || human_speech.includes("hi")) {
 				response = "Hello. Welcome to Technical Company. Please select following available service: Account Information, Technical Support, or Product Information";
 				curr_status = curr_status.left;
+				unrecog_times = 0;
+			}
+			else {
+				if (unrecog_times <= 10) {
+					response = "Sorry, I cannot understand your meaning, could you please repeat it again";
+					unrecog_times ++;
+				}
+				else {
+					response = "It seems like I’m unable to help you, I will connect you to the next available agent, please wait."
+					curr_status.status = 13;
+				}
+				
 			}
 			break;
 		case 2: // select 3 three services
 			if (human_speech.includes("account information")) {
 				response = "Welcome to account service. Please select following available service: Check account balance or Pay balance";
 				curr_status = curr_status.left;
+				unrecog_times = 0;
 			}
 			else if (human_speech.includes("technical support")) {
 				response = "Welcome to technical support center. Please briefly describe your problem";
 				curr_status = curr_status.middle;
+				unrecog_times = 0;
 			}
 			else if (human_speech.includes("product information")) {
-				response = "Welcome to online shop. You can buy computer, mobile phone, modem, earphone and workstation here, would like to purchase any product";
+				response = "Welcome to online shop. You can buy"+ hash_to_string(prod_list, "name") +"here, would like to purchase any product";
 				curr_status = curr_status.right;
+				unrecog_times = 0;
+			}
+			else if (human_speech == "return") {
+				response = "Hello. Welcome to Technical Company. Please select following available service: Account Information, Technical Support, or Product Information";
+				curr_status = curr_status.parent;
+				unrecog_times = 0;
+			}
+			else {
+				if (unrecog_times <= 10) {
+					response = "Sorry, I cannot understand your meaning, could you please repeat it again";
+					unrecog_times ++;
+				}
+				else {
+					response = "It seems like I’m unable to help you, I will connect you to the next available agent, please wait."
+					curr_status.status = 13;
+				}
 			}
 			break;
-		case 3: //
+		case 3: // account information
+			if (human_speech.includes("check")) {
+				response = "Your current balance is 1000 dollars, would you like to pay?";
+				curr_status = curr_status.left;
+				unrecog_times = 0;
+			}
+			else  if (human_speech.includes("pay")) {
+				response = "Please tell me your credit number";
+				curr_status = curr_status.right;
+				unrecog_times = 0;
+			}
+			else {
+				if (unrecog_times <= 10) {
+					response = "Sorry, I cannot understand your meaning, could you please repeat it again";
+					unrecog_times ++;
+				}
+				else {
+					response = "It seems like I’m unable to help you, I will connect you to the next available agent, please wait."
+					curr_status.status = 13;
+				}
+			}
+			break;
+		case 4: // technical support
+			response = "have you tried turning it off and on?"
+			curr_status = curr_status.left;
+			unrecog_times = 0;
+			break;
+		case 5: // product information
+			var price = search_prod(human_speech);
+			if (sprice != -1) {
+				response = human_speech+" is "+price+" dollars. Please would you like to pay";
+				curr_status = curr_status.left;
+			}
+			else {
+				response = "sorry, I cannot find "+human_speech+" in our list, would you please try again";
+			}
+			break;
+		case 6: // check balance
+			if (human_speech.includes("yes")) {
+				response = "Please tell me your credit number";
+				curr_status = curr_status.left;
+				unrecog_times = 0;
+			}
+			else if (human_speech.includes("no")) {
+				response = "Thanks for your calling, have a good day";
+				curr_status = curr_status.right;
+				unrecog_times = 0;
+			}
+			else {
+				if (unrecog_times <= 10) {
+					response = "Sorry, I cannot understand your meaning, could you please repeat it again";
+					unrecog_times ++;
+				}
+				else {
+					response = "It seems like I’m unable to help you, I will connect you to the next available agent, please wait."
+					curr_status.status = 13;
+				}
+			}
+			break;
+		case 7: // pay
+			break;
+		case 8: // ask for reboot
+			if (human_speech.includes("yes")) {
+				response = "We will connect you to the next available technical agent";
+				curr_status = curr_status.left;
+				unrecog_times = 0;
+			}
+			else if (human_speech.includes("no")) {
+				response = "Try turning it off and on. Dit it work？";
+				curr_status = curr_status.right;
+				unrecog_times = 0;
+			}
+			else {
+				if (unrecog_times <= 10) {
+					response = "Sorry, I cannot understand your meaning, could you please repeat it again";
+					unrecog_times ++;
+				}
+				else {
+					response = "It seems like I’m unable to help you, I will connect you to the next available agent, please wait."
+					curr_status.status = 13;
+				}
+			}
+			break;
+		case 9: // agent
+			break;
+		case 10: // try reboot
+			if (human_speech.includes("yes")) {
+				response = "I’m glad I could help. Have a good day.";
+				curr_status = curr_status.left;
+				unrecog_times = 0;
+			}
+			else if (human_speech.includes("no")) {
+				response = "We will connect you to the next available technical agent.";
+				curr_status = curr_status.right;
+				unrecog_times = 0;
+			}
+			else {
+				if (unrecog_times <= 10) {
+					response = "Sorry, I cannot understand your meaning, could you please repeat it again";
+					unrecog_times ++;
+				}
+				else {
+					response = "It seems like I’m unable to help you, I will connect you to the next available agent, please wait."
+					curr_status.status = 13;
+				}
+			}
+			break;
+		case 11: // solve problem
+			break;
+		case 13: // end
+			curr_status = status_tree_root;
+			recognition.stop();
+	    	return;
+			break;
+
+
 
 	}
 	console.log(response);
 	return response;
 }
-
+//=====================================
+//         Status Tree Builder          
+//=====================================
 /**
  *
  * Status table: use different number to separate different stages
@@ -467,7 +648,7 @@ function response_gen(human_speech) {
  * 10 - try reboot -- Try turning it off and on. Dit it work？
  * 11 - solve problem -- I’m glad I could help. Have a good day.
  * 12 - not found, try again -- we cannot find the item you say, please try again
- * 13 - end Thanks for your patient and calling, Have a good day!
+ * 13 - end -- Thanks for your patient and calling, Have a good day!
  */
 function build_status_tree() {
 
@@ -480,14 +661,14 @@ function build_status_tree() {
 
 	var tech_supp_node = new TreeNode(4);
 	var try_reboot_node = new TreeNode(8);
-	var agent_node = new TreeNode(9);
+	// var agent_node = new TreeNode(9);
 	var reboot_test_node = new TreeNode(10);
-	var solve_node = new TreeNode(11);
-	var unsolve_node = new TreeNode(9);
+	var solve_node = new TreeNode(13);
+	// var unsolve_node = new TreeNode(9);
 
 	var prod_info_node = new TreeNode(5);
 	var prod_pay_node = new TreeNode(7);
-	var prod_not_found_node = new TreeNode(13);
+	// var prod_not_found_node = new TreeNode(13);
 
 	greet_node.left = selection_node;
 
@@ -511,21 +692,50 @@ function build_status_tree() {
 	tech_supp_node.left = try_reboot_node;
 
 	try_reboot_node.parent = tech_supp_node;
-	try_reboot_node.left = agent_node;
+	try_reboot_node.left = end_node;
 	try_reboot_node.right = reboot_test_node;
 
-	try_reboot_node.left = solve_node;
-	try_reboot_node.right = unsolve_node;
+	reboot_test_node.left = solve_node;
+	reboot_test_node.right = end_node;
 
 	// product info branch
 	prod_info_node.parent = selection_node;
 	prod_info_node.left = prod_pay_node;
-	prod_info_node.right = prod_not_found_node;
-
-	prod_not_found_node.parent = prod_info_node;
 
 	return greet_node;
 
+}
+
+//=====================================
+//           Helper func          
+//=====================================
+
+function arr_to_string(arr) {
+	// body...
+	var str = "";
+	arr.forEach(function(element) {
+		str += element+" ";
+	});
+	return str;
+}
+
+function hash_to_string(hahs, key) {
+	// body...
+	var str = "";
+	hash.forEach(function(element) {
+		str += element[key]+" ";
+	});
+	return str
+}
+
+function search_prod(name) {
+	// body...
+	prod_list.forEach(function(element) {
+		if (element["name"] == name) {
+			return element["price"];
+		}
+	});
+	return -1;// product not found
 }
 
 </script>

@@ -100,6 +100,8 @@
   <p id="info_no_speech">No speech was detected. You may need to adjust your
     <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892">
       microphone settings</a>.</p>
+  <p id="info_service_not_avail">The Search function is currently shut off, please say 'OKAY GOOGLE' to activate this service.</p>
+  <p id="info_times_out">Times Out, please say OKAY GOOGLE again to activate the search service</p>
   <p id="info_no_microphone" style="display:none">
     No microphone was found. Ensure that a microphone is installed and that
     <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892">
@@ -112,8 +114,8 @@
      Upgrade to <a href="//www.google.com/chrome">Chrome</a>
      version 25 or later.</p>
 </div>
-<div>
- <gcse:search gname="searcher">
+<div id="searchContainer">
+  <gcse:search gname="searcher">
 </div>
 <div class="center">
   <button id="start_button" onclick="startButton(event)">
@@ -251,10 +253,20 @@ function updateCountry() {
 }
 
 // var create_email = false;
+setInterval(function() {
+    if (final_transcript.length == 0) {
+      search_avail = false;
+      showInfo('info_times_out');
+    }
+  },
+  10000
+  );
+
 var final_transcript = '';
 var recognizing = false;
 var ignore_onend;
 var start_timestamp;
+var search_avail = false;
 if (!('webkitSpeechRecognition' in window)) {
   upgrade();
 } else {
@@ -265,7 +277,7 @@ if (!('webkitSpeechRecognition' in window)) {
 
   recognition.onstart = function() {
     recognizing = true;
-    showInfo('info_speak_now');
+    showInfo('info_service_not_avail');
     start_img.src = 'mic-animate.gif';
   };
 
@@ -330,18 +342,29 @@ if (!('webkitSpeechRecognition' in window)) {
       var search = google.search.cse.element.getElement('searcher');
       // showButtons('inline-block');
       console.log(final_transcript);
-      if (final_transcript.toLowerCase().includes("clear")) {
+      if (final_transcript.toLowerCase().includes("ok google") || final_transcript.toLowerCase().includes("okay google")) {
+        search_avail = true;
+        final_transcript = '';
+        showInfo('info_speak_now');
+      }
+      else if (final_transcript.toLowerCase().includes("clear")) {
         final_transcript = '';
         search.clearAllResults();
       }
       else if (final_transcript.toLowerCase().includes("turn off")) {
         final_transcript = '';
         search.clearAllResults();
-        recognition.stop();
-        return;
+        search_avail = false;
       }
       else {
-        search.execute(final_transcript);
+        if (search_avail) {
+          search.execute(final_transcript);
+          final_transcript = '';
+        }
+        else {
+          showInfo("info_service_not_avail");
+        }
+        
       }
     }
   };
@@ -436,6 +459,13 @@ function showInfo(s) {
 //   copy_info.style.display = 'none';
 //   email_info.style.display = 'none';
 // }
+
+function check() {
+  // body...
+  if (final_transcript.length == 0) {
+    search_avail = false;
+  }
+}
 
 
 </script>

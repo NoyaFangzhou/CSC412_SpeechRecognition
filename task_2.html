@@ -365,6 +365,8 @@ function capitalize(s) {
 //   showInfo('');
 // }
 function startButton(event) {
+  // var msg = new SpeechSynthesisUtterance("Hello World");
+  // speechSynthesis.speak(msg);
   if (recognizing) {
     recognition.stop();
     return;
@@ -448,15 +450,13 @@ var prod_list = [ {
             "name": "tablets",
             "price": 499
           }, {
-          "name": "vr glasses",
-            "price": 49
-          }, {
             "name": "play station",
             "price": 399
           } ];
 function text_to_voice(text) {
 	var response;
   var human_speech = text.toLowerCase();
+  console.log(human_speech);
 	if (text.includes("exit")) {
 		var msg = new SpeechSynthesisUtterance("Thanks for your calling, have a good day");
 		speechSynthesis.speak(msg);
@@ -495,7 +495,7 @@ function text_to_voice(text) {
           unrecog_times = 0;
         }
         else if (human_speech.includes("product information")) {
-          response = "Welcome to online shop. You can buy "+ hash_to_string(prod_list, "name") +"here, would like to purchase any product";
+          response = "Welcome to online IT store. You can buy "+ hash_to_string(prod_list, "name") +"here, would like to purchase any product";
           curr_status = curr_status.right;
           unrecog_times = 0;
         }
@@ -516,13 +516,13 @@ function text_to_voice(text) {
         }
         break;
       case 3: // account information
-        if (human_speech.test("\bcheck\.*\balance\b")) {
+        if (human_speech.includes("check balance")) {
           response = "Your current balance is 1000 dollars, would you like to pay?";
           curr_status = curr_status.left;
           unrecog_times = 0;
         }
         else  if (human_speech.includes("pay")) {
-          response = "Please tell me your credit number";
+          response = "Great. Please tell me your credit number";
           curr_status = curr_status.right;
           unrecog_times = 0;
         }
@@ -555,7 +555,7 @@ function text_to_voice(text) {
         break;
       case 6: // check balance
         if (human_speech.includes("yes")) {
-          response = "Please tell me your credit number";
+          response = "Greate, Please tell me your credit number";
           curr_status = curr_status.left;
           unrecog_times = 0;
         }
@@ -576,8 +576,8 @@ function text_to_voice(text) {
         }
         break;
       case 7: // pay
-        if (human_speech.test("\b4[0-9]{12}(?:[0-9]{3})?\b")) {
-          response = "Your credit number is XXXXX, is it correct?";
+        if (/[0-9]{12}$/.test(num_word_converter(human_speech))) {
+          response = "Please tell me your three digit secure code";
           curr_status = curr_status.left;
         }
         else {
@@ -629,33 +629,21 @@ function text_to_voice(text) {
         }
         break;
       case 11: // payment confirmation
-        if (human_speech.includes("yes")) {
-          response = "We've successfully received your payment. Have a good day.";
-          curr_status = 10;
-          unrecog_times = 0;
-        }
-        else if (human_speech.includes("no")) {
-          response = "Please tell us your credit number again.";
-          curr_status = curr_status.parent;
-          unrecog_times = 0;
+        if (/[0-9]{3}/.test(num_word_converter(human_speech))) {
+          response = "We received your payment successfully. Thanks for your patient. Have a good day";
+          curr_status.status = 10;
         }
         else {
-          if (unrecog_times < 5) {
-            response = "Sorry, I cannot understand your meaning, could you please repeat it again";
-            unrecog_times ++;
-          }
-          else {
-            response = "It seems like I’m unable to help you, I will connect you to the next available agent, please wait."
-            curr_status.status = 10;
-          }
+          response = "Your secure code is invalid, please try again.";
         }
         break;
       case 10: // end
         curr_status = status_tree_root;
         break;
       case  12:
-        response = "Please tell me your credit number";
+        response = "Great, Please tell me your credit number";
         curr_status = curr_status.left;
+        break;
     }
 	}
 	var msg = new SpeechSynthesisUtterance(response);
@@ -793,41 +781,30 @@ function search_prod(name) {
 	return p;// product not found
 }
 
-function num_word_converter(text) {
-  var prod_list = [ {
-            "number": 0,
-            "word": "zero"
-          }, {
-            "number": 1,
-            "word": "one"
-          }, {
-            "number": 2,
-            "word": "two"
-          }, {
-            "number": 3,
-            "word": "three"
-          }, {
-            "number": 4,
-            "word": "four"
-          }, {
-            "number": 5,
-            "word": "five"
-          }, {
-            "number": 6,
-            "word": "six"
-          }, {
-            "number": 7,
-            "word": "seven"
-          }, {
-            "number": 8,
-            "word": "eight"
-          }, {
-            "number": 9,
-            "word": "nine"
-          } ];
+function num_word_converter(str) {
+  var check = 0;
+  var reg = /[0-9]{12}$/;
+  //document.getElementById("demo").innerHTML = str;
+  while(!reg.test(str) && str.includes(' ')) {
+    str = str.replace("zero", '0');
+    str = str.replace("one", '1'); 
+    str = str.replace("two", '2');
+    str = str.replace("three", '3'); 
+    str = str.replace("four", '4');
+    str = str.replace("five", '5'); 
+    str = str.replace("six", '6');
+    str = str.replace("seven", '7'); 
+    str = str.replace("eight", '8');
+    str = str.replace("nine", '9');
+    str = str.replace(" ", '');
+    check ++;
+    if(check >= 23) {
+      break;
+    }
+  }
+  console.log(str);
+  return str;
   // body...
-
-
 }
 
 </script>

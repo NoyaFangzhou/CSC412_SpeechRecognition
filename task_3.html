@@ -259,7 +259,7 @@ setInterval(function() {
       showInfo('info_times_out');
     }
   },
-  10000
+  25000
   );
 
 var final_transcript = '';
@@ -355,6 +355,9 @@ if (!('webkitSpeechRecognition' in window)) {
         final_transcript = '';
         search.clearAllResults();
         search_avail = false;
+        recognizing = false;
+        recognition.stop();
+        return ;
       }
       else {
         if (search_avail) {
